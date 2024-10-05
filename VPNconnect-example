@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# You need to go to protonvpn iwebsite and download the .ovpn config files.
+# Write down the absolute path to the folder:
+ProtonVPN_PATH="/path/to/ProtonVPN"
+# You should have the config files at /path/ProtonVPN/OpenVPN/*ovpn
+
+# You need to provide a username and a password when you are connecting to a server,
+# You can write them on a text file or use pass (password manager) to avoid the cleartext:
+OVPNU=$(pass show protonvpn-userpass-example-file | grep OpenVPN_IKEv2_username | cut -d" " -f2)
+OVPNP=$(pass show protonvpn-userpass-example-file | grep OpenVPN_IKEv2_password | cut -d" " -f2)
+# Example file:
+# OpenVPN_IKEv2_username: randomstring
+# OpenVPN_IKEv2_password: randomstring
+
+
+function kill_vpn() {
+  pkexec kill $(pgrep vpn) 2>/dev/null
+}
+if [[ "$1" == "-k" ]]; then
+  kill_vpn && exit 0
+fi
+
+PROT=tcp
+CTRY=nl
+NUM=01
+
+OVPN_FILE="${CTRY}-free-${NUM}.protonvpn.${PROT}.ovpn"
+if [ ! -e "$ProtonVPN_PATH/OpenVPN/$OVPN_FILE" ]; then
+  # old config files have a different name
+  OVPN_FILE="${CTRY}-free-${NUM}.protonvpn.net.${PROT}.ovpn"
+fi
+
+
+pkexec bash -c "kill $(pgrep vpn) 2>/dev/null ; echo -e \"$OVPNU\n$OVPNP\" | openvpn --config \"$ProtonVPN_PATH/OpenVPN/$OVPN_FILE\" --auth-user-pass /dev/stdin > /dev/null &"

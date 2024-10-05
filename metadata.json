@@ -1,0 +1,6 @@
+{
+  "name": "VPNConnect",
+  "description": "Enable/Disable VPN.",
+  "uuid": "vpnconnect@rc.net",
+  "shell-version": ["45", "46", "47"]
+}
